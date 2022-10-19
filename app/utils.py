@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import PIL
 from PIL import Image, ImageTk
 
@@ -63,8 +65,15 @@ class ImageProcessor:
 
     @staticmethod
     def open_image(file: str):
+        # ~~此处使用缓存，避免二次打开文件，产生过多系统调用~~
+        # ~~读取文件，转换为 Image 对象，同时识别其文件类型~~
+        # 设计不周，耦合太高，就此罢了
         try:
-            return Image.open(file)
+            with open(file, 'rb') as fp:
+                bytes_ = fp.read()
+            image = Image.open(BytesIO(bytes_))
+            # ext = filetype.guess_extension(bytes_)
+            return image  # , ext
         except PIL.UnidentifiedImageError:
             pass
 
@@ -88,16 +97,7 @@ class ImageProcessor:
         if image is None:
             return
 
-        if func is None:
-            return self.convert_image(image)
-
-        def res_w(img):
-            return img.width > img.height
-
-        def res_h(img):
-            return img.width < img.height
-
-        if func == 0 and res_w(image):
-            return self.convert_image(image)
-        elif func == 1 and res_h(image):
+        if (func is None) \
+                or (func == 0 and image.width > image.height) \
+                or (func == 1 and image.width < image.height):
             return self.convert_image(image)

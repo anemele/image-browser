@@ -44,7 +44,7 @@ class Backend:
         self._clear_cache()
 
         def walk(path):
-            for top, _, files in os.listdir(path):
+            for top, _, files in os.walk(path):
                 for sth in files:
                     filepath = os.path.join(top, sth)
                     if os.path.isfile(filepath):

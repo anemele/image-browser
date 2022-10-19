@@ -5,8 +5,9 @@ Image Browser Main Program
 import hashlib
 import os
 import shutil
-import time
 from tkinter import filedialog
+
+import filetype
 
 from app.backend import *
 from app.gui import *
@@ -74,26 +75,31 @@ class Application(GUI, Backend):  # 继承GUI类
             os.path.basename(filename)
         ))
         self.label_pic_content.config(image=image)
-        time.sleep(0.02)  # 预留缓冲，防止图片滚动过快闪烁
+        self.label_pic_content.after(20)  # 预留缓冲，防止图片滚动过快闪烁
 
     def _save_image(self):
         if len(self._image_path) == 0:
             self.raise_info('No image to save.')
             return
 
-        def get_md5(path):
+        def get_dst(path):
             with open(path, 'rb') as fp:
-                hash_md5 = hashlib.md5(fp.read())
-            return hash_md5.hexdigest()
+                content = fp.read()
+            hash_md5 = hashlib.md5(content)
+            ext = filetype.guess_extension(content)
+            if ext is None:
+                return hash_md5.hexdigest()
+            else:
+                return f'{hash_md5.hexdigest()}.{ext}'
 
         src, _ = self._here_image()
-        md5 = get_md5(src)
-        dst = os.path.join(self._save_path, md5 + os.path.splitext(src)[1])
+        filename = get_dst(src)
+        dst = os.path.join(self._save_path, filename)
         if os.path.exists(dst):
-            self.raise_info('The image has existed.')
+            self.raise_info(f'[Exists] {filename}')
         else:
             shutil.copy(src, dst)
-            self.raise_info('Successfully save the image.')
+            self.raise_info(f'[Saved] {filename}')
 
     def _open_dir(self):
         path = filedialog.askdirectory()
