@@ -77,7 +77,7 @@ class Backend:
         # 此处传参 func=0，日常使用都是查看锁屏壁纸，保留宽图
         # 如果做其它用途，参看函数文档
         # 最好的方法是外部接收参数，不必修改源码
-        image = self._image_processor.open_and_convert(filepath, func=0)
+        image = self._image_processor.open_and_convert(filepath)  # , func=0)
         if image is None:
             self._image_path.rmv()
             self._image_content.pop(filepath)

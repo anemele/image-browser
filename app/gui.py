@@ -2,7 +2,6 @@
 Image Browser GUI
 前端设计与调试
 """
-
 import tkinter as tk
 from tkinter import ttk
 
@@ -18,6 +17,8 @@ class GUI(tk.Tk):
         self.geometry('1080x720')  # GUI尺寸
         self.resizable(False, False)  # 不可调整大小
 
+        self.frame_info = tk.Frame(self)  # 信息组件
+        self.label_info = tk.Label(self.frame_info, font=('bold', 16))  # 提示信息，替代 messagebox
         self.frame_pic = tk.Frame(self)  # 显示图片的框架，背景颜色为紫色，RGB
         self.label_pic_name = tk.Label(self.frame_pic, text='Picture Name')  # 显示图片名称的标签
         self.label_pic_content = tk.Label(self.frame_pic, text='')  # 显示图片内容的标签
@@ -33,9 +34,16 @@ class GUI(tk.Tk):
         self.mainloop()
 
     def layout_gui(self):
+        self.frame_info.pack()
+        self.label_info.pack(pady=5)
         self.frame_pic.pack(fill=tk.BOTH, pady=5, padx=5, expand=True)
         self.label_pic_name.pack(pady=10)
         self.label_pic_content.pack(anchor=tk.CENTER)
+
+    def raise_info(self, msg: str):
+        self.label_info.config(text=msg)
+        # 显示时间 2 秒
+        self.label_info.after(2000, lambda: self.label_info.config(text=''))
 
 
 class Toplevel(tk.Toplevel):
