@@ -1,7 +1,7 @@
 import os
 
-from app.constants import *
-from app.utils import *
+from browser.constants import *
+from browser.utils import *
 
 __all__ = [
     'Backend'

@@ -1,4 +1,4 @@
-from app import Application
+from browser import Application
 
 if __name__ == '__main__':
     app = Application()

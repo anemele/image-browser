@@ -9,8 +9,8 @@ from tkinter import filedialog
 
 import filetype
 
-from app.backend import *
-from app.gui import *
+from browser.backend import *
+from browser.gui import *
 
 __all__ = [
     'Application'
