@@ -1,2 +1,2 @@
 @echo off
-start pythonw main.py
+start pyw -3.8 main.py

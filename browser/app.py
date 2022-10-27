@@ -40,11 +40,12 @@ class Application(GUI, Backend):  # 继承GUI类
                   lambda event: self._display(-1)
                   if event.delta > 0
                   else self._display())
-        self.label_pic_content.bind('<Double-Button-1>', lambda event: self._save_image())  # 双击左键，保存
+        self.label_image_content.bind('<Double-Button-1>', lambda event: self._save_image())  # 双击左键，保存
 
     def init(self):
         subdir = False  # 默认不遍历子目录
         self._load_files_info(subdir)  # 加载文件信息
+        self.title(f'{self.init_title} - {self._src_path}')
         self._display()  # 展示第一张图片
 
     def _display(self, direction: int = 1):
@@ -69,13 +70,13 @@ class Application(GUI, Backend):  # 继承GUI类
             return
         filename, image = result
 
-        self.label_pic_name.config(text='[%d/%d] %s' % (
+        self.label_image_name.config(text='[%d/%d] %s' % (
             self._image_path.idx + 1,
             len(self._image_path),
             os.path.basename(filename)
         ))
-        self.label_pic_content.config(image=image)
-        self.label_pic_content.after(20)  # 预留缓冲，防止图片滚动过快闪烁
+        self.label_image_content.config(image=image)
+        self.label_image_content.after(20)  # 预留缓冲，防止图片滚动过快闪烁
 
     def _save_image(self):
         if len(self._image_path) == 0:
@@ -105,8 +106,8 @@ class Application(GUI, Backend):  # 继承GUI类
         path = filedialog.askdirectory()
         if path:
             self._src_path = path
-            self.label_pic_name.config(text='Picture Name')
-            self.label_pic_content.config(image=None)
+            self.label_image_name.config(text='Picture Name')
+            self.label_image_content.config(image=None)
             self.init()
 
     def _exit_app(self):
