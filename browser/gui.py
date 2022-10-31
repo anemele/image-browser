@@ -41,7 +41,7 @@ class GUI(tk.Tk):
 
     def config_gui(self):
         self.set_title()
-        # self.geometry('1080x720')  # GUI尺寸
+        self.geometry('1080x720')  # GUI 尺寸
         # self.resizable(False, False)  # 不可调整大小
 
     def layout_gui(self):

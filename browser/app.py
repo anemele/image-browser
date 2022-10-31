@@ -1,6 +1,5 @@
 """
 Image Browser Main Program
-
 """
 import hashlib
 import os
@@ -27,6 +26,8 @@ class Application(GUI, Backend):  # 继承GUI类
         self.focus_force()  # 获取焦点
 
     def config_gui(self):
+        super().config_gui()
+
         # 按钮绑定方法
         self.tk_btn.btn_next.config(command=lambda: self._display())
         self.tk_btn.btn_prev.config(command=lambda: self._display(-1))
