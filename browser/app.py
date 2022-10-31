@@ -9,8 +9,8 @@ from tkinter import filedialog
 
 import filetype
 
-from browser.backend import *
-from browser.gui import *
+from .backend import *
+from .gui import *
 
 __all__ = [
     'Application'
@@ -45,7 +45,7 @@ class Application(GUI, Backend):  # 继承GUI类
     def init(self):
         subdir = False  # 默认不遍历子目录
         self._load_files_info(subdir)  # 加载文件信息
-        self.title(f'{self.init_title} - {self._src_path}')
+        self.set_title(self._src_path.replace('/', os.sep))
         self._display()  # 展示第一张图片
 
     def _display(self, direction: int = 1):

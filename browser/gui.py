@@ -15,9 +15,6 @@ class GUI(tk.Tk):
 
     def __init__(self):
         super().__init__()
-        self.title(self.init_title)  # GUI标头
-        self.geometry('1080x720')  # GUI尺寸
-        self.resizable(False, False)  # 不可调整大小
 
         self.frame_info = tk.Frame(self)  # 信息组件
         self.label_info = tk.Label(self.frame_info, font=('bold', 16))  # 提示信息，替代 messagebox
@@ -30,10 +27,22 @@ class GUI(tk.Tk):
         self.tk_btn.set_pos(int(self.winfo_x() + self.winfo_width() - 100),
                             int(self.winfo_y() + self.winfo_height() / 2))
 
-        self.layout_gui()  # 布置界面
+        self.config_gui()  # 配置界面
+        self.layout_gui()  # 布局界面
 
     def run(self):
         self.mainloop()
+
+    def set_title(self, path: str = None):
+        if path is None:
+            self.title(self.init_title)
+        else:
+            self.title(f'{self.init_title} - {path}')
+
+    def config_gui(self):
+        self.set_title()
+        # self.geometry('1080x720')  # GUI尺寸
+        # self.resizable(False, False)  # 不可调整大小
 
     def layout_gui(self):
         self.frame_info.pack()

@@ -1,1 +1,1 @@
-from browser.app import *
+from .app import *
