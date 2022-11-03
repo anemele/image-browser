@@ -10,25 +10,79 @@ __all__ = [
 ]
 
 
+class FrameInfo(tk.Frame):
+
+    def __init__(self, master, **kwargs):
+        super(FrameInfo, self).__init__(master, **kwargs)
+
+        self.label_banner = tk.Label(self, font=('bold', 16))
+
+        self.layout_gui()
+
+    def layout_gui(self):
+        self.label_banner.pack(pady=5)
+
+    def raise_info(self, msg: str):
+        self.label_banner.config(text=msg)
+        # 显示时间 2 秒
+        self.label_banner.after(2000, lambda: self.label_banner.config(text=''))
+
+
+class FrameImage(tk.Frame):
+
+    def __init__(self, master, **kwargs):
+        super(FrameImage, self).__init__(master, **kwargs)
+
+        self.label_image_name = tk.Label(self, text='Picture Name')  # 显示图片名称的标签
+        self.label_image_content = tk.Label(self, text='')  # 显示图片内容的标签
+
+        self.layout_gui()
+
+    def layout_gui(self):
+        self.label_image_name.pack(pady=10)
+        self.label_image_content.pack(anchor=tk.CENTER)
+
+
+class MenuBar(tk.Menu):
+
+    def __init__(self, master, **kwargs):
+        super(MenuBar, self).__init__(master, **kwargs)
+
+        self.file_menu = tk.Menu(self, tearoff=False)
+
+        self.config_gui()
+
+    def config_gui(self):
+        self.add_cascade(
+            label='File',
+            menu=self.file_menu
+        )
+
+
+class MenuPost(tk.Menu):
+
+    def __init__(self, master, **kwargs):
+        super(MenuPost, self).__init__(master, **kwargs)
+
+        # self.add_command(label='♥')
+        # self.add_command(label='📂')
+
+
 class GUI(tk.Tk):
     init_title = 'Image Browser'
 
     def __init__(self):
         super().__init__()
 
-        self.frame_info = tk.Frame(self)  # 信息组件
-        self.label_info = tk.Label(self.frame_info, font=('bold', 16))  # 提示信息，替代 messagebox
-        self.frame_image = tk.Frame(self)  # 显示图片的框架，背景颜色为紫色，RGB
-        self.label_image_name = tk.Label(self.frame_image, text='Picture Name')  # 显示图片名称的标签
-        self.label_image_content = tk.Label(self.frame_image, text='')  # 显示图片内容的标签
-
-        self.tk_btn = Toplevel(self, background='#CCCCCC', padx=10, pady=10)
-        self.update()  # 查看窗口尺寸、坐标信息前，必须先update
-        self.tk_btn.set_pos(int(self.winfo_x() + self.winfo_width() - 100),
-                            int(self.winfo_y() + self.winfo_height() / 2))
+        self.frame_info = FrameInfo(self)  # 显示信息
+        self.frame_image = FrameImage(self)  # 显示图片
+        # self.menu_bar = MenuBar(self, tearoff=False)  # 菜单栏
+        self.menu_post = MenuPost(self, tearoff=False)  # 右键菜单
+        # self.tk_btn = Toplevel(self, background='#CCCCCC', padx=10, pady=10)
 
         self.config_gui()  # 配置界面
         self.layout_gui()  # 布局界面
+        # self.tk_btn.init_pos()  # 设置按钮位置
 
     def run(self):
         self.mainloop()
@@ -43,23 +97,21 @@ class GUI(tk.Tk):
         self.set_title()
         self.geometry('1080x720')  # GUI 尺寸
         # self.resizable(False, False)  # 不可调整大小
+        # self.config(menu=self.menu_bar)
+        self.frame_image.label_image_content.bind(
+            '<Button-3>', lambda event: self.menu_post.post(event.x_root, event.y_root)
+        )
 
     def layout_gui(self):
         self.frame_info.pack()
-        self.label_info.pack(pady=5)
         self.frame_image.pack(fill=tk.BOTH, pady=5, padx=5, expand=True)
-        self.label_image_name.pack(pady=10)
-        self.label_image_content.pack(anchor=tk.CENTER)
-
-    def raise_info(self, msg: str):
-        self.label_info.config(text=msg)
-        # 显示时间 2 秒
-        self.label_info.after(2000, lambda: self.label_info.config(text=''))
 
 
 class Toplevel(tk.Toplevel):
-    def __init__(self, *args, **kwargs):
-        super(Toplevel, self).__init__(*args, **kwargs)
+
+    def __init__(self, master, **kwargs):
+        super(Toplevel, self).__init__(master, **kwargs)
+
         self.btn_next = ttk.Button(self, text='→', width=4)  # 下一张按钮
         self.btn_prev = ttk.Button(self, text='←', width=4)  # 上一张按钮
         self.btn_save = ttk.Button(self, text='♥', width=4)  # 保存按钮，将当前图片保存到 save 文件夹，相当于收藏
@@ -92,6 +144,14 @@ class Toplevel(tk.Toplevel):
     def _drag(self, event):
         self.set_pos(self.winfo_pointerx() - self._offset_x,
                      self.winfo_pointery() - self._offset_y)
+
+    def init_pos(self):
+        # 菜单栏靠右水平居中
+        self.master.update()  # 查看窗口尺寸、坐标信息前，必须先update
+        self.set_pos(
+            int(self.master.winfo_x() + self.master.winfo_width() * 0.9),
+            int(self.master.winfo_y() + self.master.winfo_height() / 2)
+        )
 
     def set_pos(self, x, y):
         self.geometry('+{}+{}'.format(x, y))

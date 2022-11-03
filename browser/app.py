@@ -4,6 +4,7 @@ Image Browser Main Program
 import hashlib
 import os
 import shutil
+import subprocess
 from tkinter import filedialog
 
 import filetype
@@ -17,11 +18,31 @@ __all__ = [
 
 
 class Application(GUI, Backend):  # 继承GUI类
+
     def __init__(self):
         GUI.__init__(self)
         Backend.__init__(self)
 
         self.config_gui()
+        # 菜单绑定方法
+        self.menu_post.add_command(
+            label='Save Image',
+            command=self._save_image
+        )
+        self.menu_post.add_command(
+            label='Open in Explorer',
+            command=lambda: subprocess.run(f'cmd /c start {self._src_path}')
+        )
+        self.menu_post.add_separator()
+        self.menu_post.add_command(
+            label='List Folder',
+            command=lambda: self._open_dir()
+        )
+        self.menu_post.add_command(
+            label='Walk Folder',
+            command=lambda: self._open_dir(True)
+        )
+
         self.init()  # App 初始化
         self.focus_force()  # 获取焦点
 
@@ -29,10 +50,10 @@ class Application(GUI, Backend):  # 继承GUI类
         super().config_gui()
 
         # 按钮绑定方法
-        self.tk_btn.btn_next.config(command=lambda: self._display())
-        self.tk_btn.btn_prev.config(command=lambda: self._display(-1))
-        self.tk_btn.btn_save.config(command=self._save_image)
-        self.tk_btn.btn_open_dir.config(command=self._open_dir)
+        # self.tk_btn.btn_next.config(command=lambda: self._display())
+        # self.tk_btn.btn_prev.config(command=lambda: self._display(-1))
+        # self.tk_btn.btn_save.config(command=self._save_image)
+        # self.tk_btn.btn_open_dir.config(command=lambda: subprocess.run(f'cmd /c start {self._src_path}'))
 
         self.bind('<Left>', lambda e: self._display(-1))  # 小键盘左键 ←
         self.bind('<Right>', lambda e: self._display())
@@ -41,10 +62,12 @@ class Application(GUI, Backend):  # 继承GUI类
                   lambda event: self._display(-1)
                   if event.delta > 0
                   else self._display())
-        self.label_image_content.bind('<Double-Button-1>', lambda event: self._save_image())  # 双击左键，保存
+        self.frame_image.label_image_content.bind(
+            '<Double-Button-1>', lambda event: self._save_image()
+        )  # 双击左键，保存
 
-    def init(self):
-        subdir = False  # 默认不遍历子目录
+    def init(self, subdir: bool = False):
+        # 默认不遍历子目录
         self._load_files_info(subdir)  # 加载文件信息
         self.set_title(self._src_path.replace('/', os.sep))
         self._display()  # 展示第一张图片
@@ -56,7 +79,7 @@ class Application(GUI, Backend):  # 继承GUI类
         :return:
         """
         if len(self._image_path) == 0:
-            self.raise_info('No image found')
+            self.frame_info.raise_info('No image found')
             return
 
         if direction == 1:
@@ -71,17 +94,18 @@ class Application(GUI, Backend):  # 继承GUI类
             return
         filename, image = result
 
-        self.label_image_name.config(text='[%d/%d] %s' % (
-            self._image_path.idx + 1,
-            len(self._image_path),
-            os.path.basename(filename)
-        ))
-        self.label_image_content.config(image=image)
-        self.label_image_content.after(20)  # 预留缓冲，防止图片滚动过快闪烁
+        self.frame_image.label_image_name.config(
+            text='[%d/%d] %s' % (
+                self._image_path.idx + 1,
+                len(self._image_path),
+                os.path.basename(filename)
+            ))
+        self.frame_image.label_image_content.config(image=image)
+        self.frame_image.label_image_content.after(20)  # 预留缓冲，防止图片滚动过快闪烁
 
     def _save_image(self):
         if len(self._image_path) == 0:
-            self.raise_info('No image to save.')
+            self.frame_info.raise_info('No image to save.')
             return
 
         def get_dst(path):
@@ -98,18 +122,18 @@ class Application(GUI, Backend):  # 继承GUI类
         filename = get_dst(src)
         dst = os.path.join(self._save_path, filename)
         if os.path.exists(dst):
-            self.raise_info(f'[Exists] {filename}')
+            self.frame_info.raise_info(f'[Exists] {filename}')
         else:
             shutil.copy(src, dst)
-            self.raise_info(f'[Saved] {filename}')
+            self.frame_info.raise_info(f'[Saved] {filename}')
 
-    def _open_dir(self):
+    def _open_dir(self, subdir: bool = False):
         path = filedialog.askdirectory()
         if path:
             self._src_path = path
-            self.label_image_name.config(text='Picture Name')
-            self.label_image_content.config(image=None)
-            self.init()
+            self.frame_image.label_image_name.config(text='Picture Name')
+            self.frame_image.label_image_content.config(image=None)
+            self.init(subdir)
 
     def _exit_app(self):
         self.destroy()
