@@ -29,9 +29,17 @@ class Application(GUI, Backend):  # 继承GUI类
             label='Save Image',
             command=self._save_image
         )
+
+        def open_in_explorer():
+            here = self._here_image()
+            if here is None:
+                subprocess.run(f'explorer {self._src_path.replace("/", os.sep)}')
+            else:
+                subprocess.run(f'explorer /select, {here[0].replace("/", os.sep)}')
+
         self.menu_post.add_command(
             label='Open in Explorer',
-            command=lambda: subprocess.run(f'cmd /c start {self._src_path}')
+            command=open_in_explorer
         )
         self.menu_post.add_separator()
         self.menu_post.add_command(
