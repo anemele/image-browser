@@ -65,6 +65,7 @@ class Application(GUI, Backend):  # 继承GUI类
 
         self.bind('<Left>', lambda e: self._display(-1))  # 小键盘左键 ←
         self.bind('<Right>', lambda e: self._display())
+        self.bind('<Escape>', lambda e: self._exit_app())
         self.bind('<Control-q>', lambda e: self._exit_app())
         self.bind('<MouseWheel>',
                   lambda event: self._display(-1)

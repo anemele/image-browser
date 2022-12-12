@@ -1,2 +1,1 @@
-@echo off
-start pyw -3.8 main.py
+@start pyw -3.8 -m browser

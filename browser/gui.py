@@ -84,9 +84,6 @@ class GUI(tk.Tk):
         self.layout_gui()  # 布局界面
         # self.tk_btn.init_pos()  # 设置按钮位置
 
-    def run(self):
-        self.mainloop()
-
     def set_title(self, path: str = None):
         if path is None:
             self.title(self.init_title)
@@ -158,4 +155,4 @@ class Toplevel(tk.Toplevel):
 
 
 if __name__ == '__main__':
-    GUI().run()
+    GUI().mainloop()
