@@ -1,6 +1,7 @@
 import os
 
-from .constants import *
+import toml
+
 from .utils import *
 
 __all__ = [
@@ -14,13 +15,16 @@ class Backend:
     """
 
     def __init__(self):
-        self._image_path = CircleList()  # 循环链表保存图片路径
+        # 导入配置
+        config = toml.load(os.path.join(os.path.dirname(__file__), 'config.toml'))
+
+        self._image_path_queue = DeQueue(maxlen=config['misc']['queue']['maxlen'])  # 循环链表保存图片路径
         self._image_content = dict()  # 图片路径为key，ImageTk.PhotoImage对象为value
         self._image_processor = ImageProcessor()  # 图片处理器，依据路径返回ImageTk.PhotoImage对象
 
         user_path = os.path.expanduser('~')  # 获取当前用户文件夹路径
-        self._src_path = os.path.join(user_path, SRC_PATH)
-        self._save_path = os.path.join(ROOT_PATH, SAVE_PATH)
+        self._src_path = os.path.join(user_path, config['path']['src'])
+        self._save_path = os.path.join(config['path']['drive'], config['path']['dst'])
         if not os.path.exists(self._save_path):
             os.makedirs(self._save_path)
 
@@ -29,7 +33,7 @@ class Backend:
         清空文件信息
         :return:
         """
-        self._image_path.clr()
+        self._image_path_queue.clear()
         self._image_content.clear()
 
     def _load_files_info(self, subdir: bool = False):
@@ -58,7 +62,7 @@ class Backend:
 
         func = walk if subdir else listdir
         for file in func(self._src_path):
-            self._image_path.add(file)
+            self._image_path_queue.append(file)
             self._image_content[file] = None
 
     def _to_label_image(self, filepath: str):
@@ -79,9 +83,9 @@ class Backend:
         # 最好的方法是外部接收参数，不必修改源码
         image = self._image_processor.open_and_convert(filepath)  # , func=0)
         if image is None:
-            self._image_path.rmv()
+            self._image_path_queue.pop()
             self._image_content.pop(filepath)
-            if len(self._image_path) == 0:
+            if len(self._image_path_queue) == 0:
                 return
             if n:
                 return self._next_image()
@@ -95,13 +99,13 @@ class Backend:
         读取下一张图片
         :return:
         """
-        filepath = self._image_path.next()
+        filepath = self._image_path_queue.next()
         return self._get_image(filepath, n=True)
 
     def _prev_image(self):
-        filepath = self._image_path.prev()
+        filepath = self._image_path_queue.prev()
         return self._get_image(filepath, n=False)
 
     def _here_image(self):
-        filepath = self._image_path.here()
+        filepath = self._image_path_queue.here()
         return self._get_image(filepath, n=False)  # 加载失败，默认上一张

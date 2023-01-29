@@ -87,7 +87,7 @@ class Application(GUI, Backend):  # 继承GUI类
         :param direction: 文件列表指针移动方向，0是当前，1是向下，-1是向上
         :return:
         """
-        if len(self._image_path) == 0:
+        if len(self._image_path_queue) == 0:
             self.frame_info.raise_info('No image found')
             return
 
@@ -105,15 +105,15 @@ class Application(GUI, Backend):  # 继承GUI类
 
         self.frame_image.label_image_name.config(
             text='[%d/%d] %s' % (
-                self._image_path.idx + 1,
-                len(self._image_path),
+                self._image_path_queue.idx + 1,
+                len(self._image_path_queue),
                 os.path.basename(filename)
             ))
         self.frame_image.label_image_content.config(image=image)
         self.frame_image.label_image_content.after(20)  # 预留缓冲，防止图片滚动过快闪烁
 
     def _save_image(self):
-        if len(self._image_path) == 0:
+        if len(self._image_path_queue) == 0:
             self.frame_info.raise_info('No image to save.')
             return
 

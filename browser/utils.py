@@ -1,48 +1,37 @@
+from collections import deque
 from io import BytesIO
 
 import PIL
 from PIL import Image, ImageTk
 
 __all__ = [
-    'CircleList',
+    'DeQueue',
     'ImageProcessor'
 ]
 
 
-# 循环表
-class CircleList(list):
-    def __init__(self):
-        super().__init__()
-        self.__offset = -1
+# 双向队列
+class DeQueue(deque):
+    def __init__(self, iterable=(), maxlen=None):
+        super().__init__(iterable, maxlen)
+
+        self.__index: int = -1
 
     @property
     def idx(self):
-        if self.__len__() == 0:
-            return -1
-        return self.__offset % self.__len__()
-
-    def add(self, obj):
-        self.append(obj)
-
-    def rmv(self):
-        self.pop(self.idx)
-
-    def clr(self):
-        self.clear()
-        self.__offset = -1
-
-    def upd(self, obj):
-        self[self.idx] = obj
+        return self.__index % len(self)
 
     def here(self):
-        return self[self.idx]
-
-    def next(self):
-        self.__offset += 1
-        return self.here()
+        if (length := len(self)) == 0:
+            return
+        return self[self.__index % length]
 
     def prev(self):
-        self.__offset -= 1
+        self.__index -= 1
+        return self.here()
+
+    def next(self):
+        self.__index += 1
         return self.here()
 
 
