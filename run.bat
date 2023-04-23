@@ -1,1 +1,1 @@
-@start pyw -3.8 -m browser
+@start pythonw -m browser

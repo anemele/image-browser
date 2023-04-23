@@ -1,72 +1,48 @@
+"""后端任务"""
 import os
+import os.path
 
-import toml
+from .utils.deque import DeQueue
+from .utils.imgpro import ImageProcessor
 
-from .utils import *
+_USER_PATH = os.path.expanduser('~')
+WALLPAPER_SRC_PATH = os.path.join(
+    _USER_PATH,
+    'AppData/Local/Packages/'
+    'Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy/'
+    'LocalState/Assets',
+)
+WALLPAPER_DST_FILE = 'savepath.txt'
 
-__all__ = [
-    'Backend'
-]
+try:
+    with open(WALLPAPER_DST_FILE, encoding='utf-8') as _fp:
+        WALLPAPER_DST_PATH = _fp.read().strip()
+    if not os.path.exists(WALLPAPER_DST_PATH):
+        os.makedirs(WALLPAPER_DST_PATH)
+except (FileNotFoundError, UnicodeDecodeError) as e:
+    print(e)
+    WALLPAPER_DST_PATH = os.path.join(_USER_PATH, 'Pictures')
 
 
 class Backend:
-    """
-    GUI 与用户交互，后端程序完成任务，实现前后端分离。
-    """
-
     def __init__(self):
-        # 导入配置
-        config = toml.load(os.path.join(os.path.dirname(__file__), 'config.toml'))
+        # 循环链表，保存图片路径
+        self._image_path_queue = DeQueue()
+        # key: 图片路径，value: ImageTk.PhotoImage
+        self._image_content = dict()
+        # 图片处理器，输入文件路径，返回 ImageTk.PhotoImage 对象
+        self._image_processor = ImageProcessor()
 
-        self._image_path_queue = DeQueue(maxlen=config['misc']['queue']['maxlen'])  # 循环链表保存图片路径
-        self._image_content = dict()  # 图片路径为key，ImageTk.PhotoImage对象为value
-        self._image_processor = ImageProcessor()  # 图片处理器，依据路径返回ImageTk.PhotoImage对象
+        self._src_path = WALLPAPER_SRC_PATH
+        self._save_path = WALLPAPER_DST_PATH
 
-        user_path = os.path.expanduser('~')  # 获取当前用户文件夹路径
-        self._src_path = os.path.join(user_path, config['path']['src'])
-        self._save_path = os.path.join(config['path']['drive'], config['path']['dst'])
-        if not os.path.exists(self._save_path):
-            os.makedirs(self._save_path)
-
-    def _clear_cache(self):
-        """
-        清空文件信息
-        :return:
-        """
-        self._image_path_queue.clear()
-        self._image_content.clear()
-
-    def _load_files_info(self, subdir: bool = False):
-        """
-        读取image path路径，将该路径下所有文件信息加载到内存。
-        此处实施懒加载，初始只读取路径信息，使用时才加载图片内容。
-        如果非图片，则删除。
-        （另需内存管理调度，图片过多时会占用大量内存）
-        :param subdir: 是否搜索子目录，默认不搜索
-        :return:
-        """
-        self._clear_cache()
-
-        def walk(path):
-            for top, _, files in os.walk(path):
-                for sth in files:
-                    filepath = os.path.join(top, sth)
-                    if os.path.isfile(filepath):
-                        yield filepath
-
-        def listdir(path):
-            for sth in os.listdir(path):
-                filepath = os.path.join(path, sth)
-                if os.path.isfile(filepath):
-                    yield filepath
-
-        func = walk if subdir else listdir
-        for file in func(self._src_path):
+        files = filter(
+            os.path.isfile,
+            (os.path.join(self._src_path, sth) for sth in os.listdir(self._src_path)),
+        )
+        for file in files:
             self._image_path_queue.append(file)
             self._image_content[file] = None
-
-    def _to_label_image(self, filepath: str):
-        return filepath, self._image_content[filepath]
 
     def _get_image(self, filepath: str, *, n: bool):
         """
@@ -76,12 +52,9 @@ class Backend:
         :return:
         """
         if self._image_content[filepath] is not None:
-            return self._to_label_image(filepath)
+            return filepath, self._image_content[filepath]
 
-        # 此处传参 func=0，日常使用都是查看锁屏壁纸，保留宽图
-        # 如果做其它用途，参看函数文档
-        # 最好的方法是外部接收参数，不必修改源码
-        image = self._image_processor.open_and_convert(filepath)  # , func=0)
+        image = self._image_processor.open(filepath)
         if image is None:
             self._image_path_queue.pop()
             self._image_content.pop(filepath)
@@ -92,13 +65,9 @@ class Backend:
             else:
                 return self._prev_image()
         self._image_content[filepath] = image
-        return self._to_label_image(filepath)
+        return filepath, self._image_content[filepath]
 
     def _next_image(self):
-        """
-        读取下一张图片
-        :return:
-        """
         filepath = self._image_path_queue.next()
         return self._get_image(filepath, n=True)
 
@@ -108,4 +77,5 @@ class Backend:
 
     def _here_image(self):
         filepath = self._image_path_queue.here()
-        return self._get_image(filepath, n=False)  # 加载失败，默认上一张
+        # 加载失败，加载上一张
+        return self._get_image(filepath, n=False)
