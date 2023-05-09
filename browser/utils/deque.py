@@ -13,9 +13,8 @@ class DeQueue(deque):
         return self.__index % len(self)
 
     def here(self):
-        if (length := len(self)) == 0:
-            return
-        return self[self.__index % length]
+        if (length := len(self)) != 0:
+            return self[self.__index % length]
 
     def prev(self):
         self.__index -= 1

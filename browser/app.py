@@ -75,7 +75,7 @@ class App(GUI, Backend):
         filename = self.get_dst(src)
         # 获取保存路径
         dst = os.path.join(self._save_path, filename)
-        # 判断是否以及存储该图片
+        # 判断是否已经存储该图片
         if os.path.exists(dst):
             self.raise_info(f'[INFO] exists {filename}')
         else:

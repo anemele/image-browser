@@ -44,7 +44,7 @@ class Backend:
             self._image_path_queue.append(file)
             self._image_content[file] = None
 
-    def _get_image(self, filepath: str, *, n: bool):
+    def _get_image(self, filepath: str, n: bool, /):
         """
         依据路径尝试加载图片，加载失败则自动更新。
         :param filepath:
@@ -69,13 +69,13 @@ class Backend:
 
     def _next_image(self):
         filepath = self._image_path_queue.next()
-        return self._get_image(filepath, n=True)
+        return self._get_image(filepath, True)
 
     def _prev_image(self):
         filepath = self._image_path_queue.prev()
-        return self._get_image(filepath, n=False)
+        return self._get_image(filepath, False)
 
     def _here_image(self):
         filepath = self._image_path_queue.here()
         # 加载失败，加载上一张
-        return self._get_image(filepath, n=False)
+        return self._get_image(filepath, False)
