@@ -1,4 +1,4 @@
-"""双向队列"""
+""" customized deque """
 from collections import deque
 
 

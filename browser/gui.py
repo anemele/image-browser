@@ -1,4 +1,4 @@
-"""前端设计"""
+""" frontend design """
 import tkinter as tk
 
 
@@ -6,8 +6,8 @@ class GUI(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title('Image Browser')
-        self.geometry('1080x720')  # GUI 尺寸
-        # self.resizable(False, False)  # 不可调整大小
+        self.geometry('1080x720')
+        # self.resizable(False, False)
 
         # 显示提示信息
         self.label_banner = tk.Label(self, font=('bold', 16))
