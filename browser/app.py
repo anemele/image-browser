@@ -4,7 +4,10 @@ import os
 import os.path
 import shutil
 
-import filetype
+try:
+    import filetype
+except ImportError:
+    filetype = None
 
 from .backend import Backend
 from .gui import GUI
@@ -56,8 +59,12 @@ class App(GUI, Backend):
         # return a filename with format <md5>.<ext>
         with open(path, 'rb') as fp:
             content = fp.read()
-        hash_md5 = hashlib.md5(content)
-        hexdigest = hash_md5.hexdigest()
+
+        hexdigest = hashlib.md5(content).hexdigest()
+
+        if filetype is None:
+            return hexdigest
+
         ext = filetype.guess_extension(content)
         if ext is None:
             return hexdigest

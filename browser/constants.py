@@ -1,19 +1,18 @@
-import os.path
+from pathlib import Path
 
-_USER_PATH = os.path.expanduser('~')
-WALLPAPER_SRC_PATH = os.path.join(
-    _USER_PATH,
+_USER_PATH = Path.home()  # os.path.expanduser('~')
+WALLPAPER_SRC_PATH = _USER_PATH / (
     'AppData/Local/Packages/'
     'Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy/'
-    'LocalState/Assets',
+    'LocalState/Assets'
 )
 _WALLPAPER_DST_FILE = 'savepath.txt'
 
 try:
     with open(_WALLPAPER_DST_FILE, encoding='utf-8') as fp:
-        WALLPAPER_DST_PATH = fp.readline().strip()
-    if not os.path.exists(WALLPAPER_DST_PATH):
-        os.makedirs(WALLPAPER_DST_PATH)
+        WALLPAPER_DST_PATH = Path(fp.readline().strip())
+    if not WALLPAPER_DST_PATH.exists():
+        WALLPAPER_DST_PATH.mkdir()
 except (FileNotFoundError, UnicodeDecodeError) as e:
     print(e)
-    WALLPAPER_DST_PATH = os.path.join(_USER_PATH, 'Pictures')
+    WALLPAPER_DST_PATH = _USER_PATH / 'Pictures'

@@ -1,9 +1,7 @@
 """ image processor """
 from typing import Optional, Tuple
 
-from PIL import Image, ImageTk
-from PIL import UnidentifiedImageError
-
+from PIL import Image, ImageTk, UnidentifiedImageError
 
 WIDTH = 1000  # max width of image displaying frame
 HEIGHT = 660  # height of that
@@ -28,7 +26,7 @@ def _convert_image(image: Image.Image) -> ImageTk.PhotoImage:
     # 获取缩放尺寸
     width, height = _auto_scale(image)
     # 缩放图片
-    new_image = image.resize((width, height), Image.ANTIALIAS)
+    new_image = image.resize((width, height), Image.LANCZOS)
     # 转化为PhotoImage图片，否则无法插入Label对象
     return ImageTk.PhotoImage(image=new_image)
 

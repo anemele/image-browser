@@ -1,2 +1,5 @@
-__pycache__
-*.bat
+__pycache__/
+.vscode/
+/*.bat
+/*.txt
+!requirements.txt
