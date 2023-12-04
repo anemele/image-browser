@@ -1,8 +1,7 @@
 """ main program """
 import hashlib
-import os
-import os.path
 import shutil
+from pathlib import Path
 
 try:
     import filetype
@@ -10,13 +9,15 @@ except ImportError:
     filetype = None
 
 from .backend import Backend
+from .constants import WALLPAPER_DST_PATH
 from .gui import GUI
 
 
-class App(GUI, Backend):
+class App(GUI):
     def __init__(self):
         GUI.__init__(self)
-        Backend.__init__(self)
+
+        self._backend = Backend()
 
         self.bind('<Left>', lambda _: self.display(False))  # left ←
         self.bind('<Right>', lambda _: self.display())
@@ -33,57 +34,50 @@ class App(GUI, Backend):
         self.mainloop()
 
     def display(self, is_next: bool = True):
-        if len(self._image_path_queue) == 0:
+        index = self._backend._image_path_queue.idx
+        if index is None:
             self.raise_info('[ERROR] no image found')
             return
+        length = len(self._backend._image_path_queue)
 
-        if is_next:
-            result = self._next_image()
-        else:
-            result = self._prev_image()
-
+        result = self._backend.next if is_next else self._backend.prev
         if result is None:
+            self.raise_info('[ERROR] no image found')
             return
-        filename, image = result
+        path, image = result
 
-        self.label_image_name.config(
-            text=f'[{self._image_path_queue.idx + 1}/{len(self._image_path_queue)}] '
-            f'{os.path.basename(filename)}'
-        )
+        self.label_image_name.config(text=f'[{ index+ 1}/{length}]  {path.name}')
         self.label_image_content.config(image=image)
         # a delay to avoid (flash)?
         self.label_image_content.after(20)
 
-    @staticmethod
-    def get_dst(path: str) -> str:
-        # return a filename with format <md5>.<ext>
-        with open(path, 'rb') as fp:
-            content = fp.read()
-
-        hexdigest = hashlib.md5(content).hexdigest()
-
-        if filetype is None:
-            return hexdigest
-
-        ext = filetype.guess_extension(content)
-        if ext is None:
-            return hexdigest
-        else:
-            return f'{hexdigest}.{ext}'
-
     def save_image(self, _):
-        if len(self._image_path_queue) == 0:
+        # get the source path
+        here = self._backend.here
+        if here is None:
             self.raise_info('[ERROR] no image to save')
             return
+        src, _ = here
+        filename = get_dst(src)
 
-        # get the source path
-        src, _ = self._here_image()
-        filename = self.get_dst(src)
         # get the destiny path
-        dst = os.path.join(self._save_path, filename)
+        dst = WALLPAPER_DST_PATH / filename
 
-        if os.path.exists(dst):
+        if dst.exists():
             self.raise_info(f'[INFO] exists {filename}')
         else:
             shutil.copy(src, dst)
             self.raise_info(f'[INFO] saved {filename}')
+
+
+def get_dst(path: Path) -> str:
+    # return a filename with format <md5>.<ext>
+    content = path.read_bytes()
+
+    hexdigest = hashlib.md5(content).hexdigest()
+
+    if filetype is None:
+        return hexdigest
+
+    ext = filetype.guess_extension(content)
+    return hexdigest if ext is None else f'{hexdigest}.{ext}'

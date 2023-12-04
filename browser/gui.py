@@ -1,4 +1,3 @@
-""" frontend design """
 import tkinter as tk
 
 
@@ -23,7 +22,7 @@ class GUI(tk.Tk):
         self.label_image_name.pack(pady=10)
         self.label_image_content.pack(anchor=tk.CENTER)
 
-    def raise_info(self, msg: str=''):
+    def raise_info(self, msg: str = ''):
         self.label_banner.config(text=msg)
         # 显示时间 2 秒
         if msg:

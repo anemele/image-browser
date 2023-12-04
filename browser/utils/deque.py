@@ -10,10 +10,13 @@ class DeQueue(deque):
 
     @property
     def idx(self):
-        return self.__index % len(self)
+        length = len(self)
+        if length != 0:
+            return self.__index % length
 
     def here(self):
-        if (length := len(self)) != 0:
+        length = len(self)
+        if length != 0:
             return self[self.__index % length]
 
     def prev(self):

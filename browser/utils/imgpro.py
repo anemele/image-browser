@@ -1,4 +1,5 @@
 """ image processor """
+from pathlib import Path
 from typing import Optional, Tuple
 
 from PIL import Image, ImageTk, UnidentifiedImageError
@@ -31,7 +32,7 @@ def _convert_image(image: Image.Image) -> ImageTk.PhotoImage:
     return ImageTk.PhotoImage(image=new_image)
 
 
-def open_image(file: str) -> Optional[ImageTk.PhotoImage]:
+def open_image(file: Path) -> Optional[ImageTk.PhotoImage]:
     try:
         image = Image.open(file)
         return _convert_image(image)

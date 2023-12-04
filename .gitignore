@@ -2,4 +2,3 @@ __pycache__/
 .vscode/
 /*.bat
 /*.txt
-!requirements.txt

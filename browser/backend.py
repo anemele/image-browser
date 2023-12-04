@@ -1,40 +1,28 @@
-""" backend tasks """
-import os
-import os.path
+from pathlib import Path
+from typing import Dict, Optional, Tuple
 
+from PIL import ImageTk
 
-from .constants import WALLPAPER_SRC_PATH, WALLPAPER_DST_PATH
+from .constants import WALLPAPER_SRC_PATH
 from .utils.deque import DeQueue
 from .utils.imgpro import open_image
 
 
 class Backend:
     def __init__(self):
+        files = [file for file in WALLPAPER_SRC_PATH.glob('*') if file.is_file()]
+
         # a circular linked list, save the image file path
-        self._image_path_queue = DeQueue()
+        self._image_path_queue: DeQueue = DeQueue(files)
         # key: image file path，value: ImageTk.PhotoImage
-        self._image_content = dict()
+        self._image_content: Dict[Path, Optional[ImageTk.PhotoImage]] = {
+            file: None for file in files
+        }
 
-        self._src_path = WALLPAPER_SRC_PATH
-        self._save_path = WALLPAPER_DST_PATH
-
-        files = filter(
-            os.path.isfile,
-            (os.path.join(self._src_path, sth) for sth in os.listdir(self._src_path)),
-        )
-        for file in files:
-            self._image_path_queue.append(file)
-            self._image_content[file] = None
-
-    def _get_image(self, filepath: str, n: bool, /):
-        """
-        依据路径尝试加载图片，加载失败则自动更新。
-        :param filepath:
-        :param n: 调用是否来自 _next_image
-        :return:
-        """
-        if self._image_content[filepath] is not None:
-            return filepath, self._image_content[filepath]
+    def _get_image(self, filepath: Path) -> Optional[Optional[ImageTk.PhotoImage]]:
+        """依据路径尝试加载图片，加载失败则自动更新。"""
+        if self._image_content.get(filepath) is not None:
+            return self._image_content[filepath]
 
         image = open_image(filepath)
         if image is None:
@@ -42,21 +30,35 @@ class Backend:
             self._image_content.pop(filepath)
             if len(self._image_path_queue) == 0:
                 return
-            if n:
-                return self._next_image()
-            else:
-                return self._prev_image()
+
         self._image_content[filepath] = image
-        return filepath, self._image_content[filepath]
+        return self._image_content[filepath]
 
-    def _next_image(self):
-        filepath = self._image_path_queue.next()
-        return self._get_image(filepath, True)
+    @property
+    def next(self) -> Optional[Tuple[Path, ImageTk.PhotoImage]]:
+        while True:
+            filepath = self._image_path_queue.next()
+            if filepath is None:
+                break
+            image = self._get_image(filepath)
+            if image is not None:
+                return filepath, image
 
-    def _prev_image(self):
-        filepath = self._image_path_queue.prev()
-        return self._get_image(filepath, False)
+    @property
+    def prev(self) -> Optional[Tuple[Path, ImageTk.PhotoImage]]:
+        while True:
+            filepath = self._image_path_queue.prev()
+            if filepath is None:
+                break
+            image = self._get_image(filepath)
+            if image is not None:
+                return filepath, image
 
-    def _here_image(self):
+    @property
+    def here(self) -> Optional[Tuple[Path, ImageTk.PhotoImage]]:
         filepath = self._image_path_queue.here()
-        return self._get_image(filepath, False)
+        if filepath is None:
+            return
+        image = self._get_image(filepath)
+        if image is not None:
+            return filepath, image
