@@ -1,8 +1,9 @@
-""" customized deque """
 from collections import deque
 
 
 class DeQueue(deque):
+    """customized deque"""
+
     def __init__(self, iterable=(), maxlen=20):
         super().__init__(iterable, maxlen)
 

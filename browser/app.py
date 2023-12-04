@@ -1,4 +1,3 @@
-""" main program """
 import hashlib
 import shutil
 from pathlib import Path
